@@ -14,7 +14,7 @@ const queryAll = (selector) => Array.from(document.querySelectorAll(selector));
 async function loadI18n(lang) {
   console.log('Carregando idioma:', lang);
   try {
-    const res = await fetch(`I18n/${lang}.json`);
+    const res = await fetch(`i18n/${lang}.json`);
     if (!res.ok) throw new Error('lang not found');
     state.dict = await res.json();
     console.log('Dicionário carregado:', state.dict); // debug
@@ -318,4 +318,5 @@ function updateOverlayOpacity(value) {
   document.documentElement.style.setProperty('--bg-overlay-dark', overlayDark);
 }
 // evento de busca
+
 query('#search').addEventListener('input', searchProducts);
