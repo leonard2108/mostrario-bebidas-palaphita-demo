@@ -1,134 +1,8 @@
 /* ===========================================================
-   REN UI — STYLE.CSS COMPLETO
+   POPUP DE IDIOMAS – REN PREMIUM (BANDEIRAS ROUND iOS)
    =========================================================== */
 
-/* ======= Tema base ======= */
-:root {
-  --bg: #ffffff;
-  --fg: #101418;
-  --muted: #6b7280;
-  --surface: #f3f4f6;
-  --card: #ffffff;
-  --primary: #2563eb;
-  --radius: 12px;
-  --shadow: 0 6px 20px rgba(0,0,0,.08);
-
-  --bg-image: none;
-  --bg-fit: cover;
-  --bg-position: center center;
-  --bg-opacity: 0.15;
-}
-
-html, body { margin: 0; padding: 0; }
-
-/* ======= Fundo ======= */
-.bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: var(--bg-image);
-  background-size: var(--bg-fit);
-  background-repeat: no-repeat;
-  background-position: var(--bg-position);
-  width: 100%;
-  min-height: 100vh;
-}
-
-.bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,var(--bg-opacity));
-  pointer-events: none;
-}
-
-/* ======= Topo ======= */
-.topbar {
-  position: sticky;
-  top: 0;
-  backdrop-filter: saturate(180%) blur(8px);
-  background: rgba(255,255,255,0.75);
-  padding: 14px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(0,0,0,0.12);
-}
-
-.controls {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-select, input[type="search"] {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid #d4d4d4;
-  background: #f9f9f9;
-  font-size: 1rem;
-}
-
-/* ======= Produtos ======= */
-.products-container {
-  padding: 24px;
-}
-
-.product-card {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(6px);
-  border-radius: 16px;
-  padding-bottom: 14px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
-  width: 100%;
-  max-width: 320px;
-  margin: 20px auto;
-  text-align: center;
-}
-
-.product-image-container img {
-  width: 100%;
-  height: auto;
-  border-radius: 16px 16px 0 0;
-}
-
-.product-card .content {
-  padding: 12px;
-  display: grid;
-  gap: 6px;
-}
-
-.desc {
-  font-size: 0.95rem;
-  color: #555;
-}
-
-/* ===========================================================
-   PAINEL ADMIN SECRETO
-   =========================================================== */
-#admin-bg-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.50);
-  backdrop-filter: blur(6px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-#admin-bg-modal .modal-content {
-  width: 90%;
-  max-width: 480px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-}
-
-/* ===========================================================
-   POP-UP DE IDIOMAS — PREMIUM
-   =========================================================== */
-
+/* ANIMAÇÕES */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -146,86 +20,132 @@ select, input[type="search"] {
   position: fixed;
   inset: 0;
   z-index: 9999;
+
   background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(9px) saturate(180%);
+  backdrop-filter: blur(9px) saturate(170%);
+  
   display: flex;
   justify-content: center;
   align-items: center;
+
   padding: 22px;
   animation: fadeIn .25s ease-out;
 }
 
+/* CARD CENTRAL */
 #lang-popup .popup-card {
   width: 92%;
   max-width: 500px;
-  background: linear-gradient(155deg,
-    rgba(255,255,255,0.65),
-    rgba(255,255,255,0.90));
+
+  background: linear-gradient(
+    155deg,
+    rgba(255,255,255,0.60),
+    rgba(255,255,255,0.90)
+  );
+
   padding: 26px;
   border-radius: 20px;
+
   text-align: center;
   box-shadow: 0 18px 50px rgba(0,0,0,.22);
-  animation: scaleIn .32s ease-out;
+
+  animation: scaleIn .33s ease-out;
   position: relative;
 }
 
+/* BOTÃO FECHAR */
 #lang-popup .close-popup {
   position: absolute;
   top: 12px;
   right: 14px;
+
+  font-size: 20px;
+  cursor: pointer;
+
   background: rgba(255,255,255,.55);
   width: 34px;
   height: 34px;
   border-radius: 50%;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 20px;
-  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
   transition: .15s;
 }
-
 #lang-popup .close-popup:hover {
   transform: scale(1.12);
   background: white;
 }
 
+/* TÍTULO */
 #lang-popup h2 {
   margin-top: 6px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   font-size: 1.45rem;
   font-weight: 600;
 }
 
+/* GRID */
 .flag-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 
+/* BOTÕES */
 .flag-btn {
-  padding: 14px 8px;
-  font-size: 36px;
+  width: 90px;
+  padding: 12px 8px;
+
+  background: rgba(255,255,255,0.80);
   border-radius: 14px;
-  border: 2px solid rgba(0,0,0,0.10);
-  background: rgba(255,255,255,0.75);
-  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid rgba(0,0,0,0.10);
   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-  animation: flagPop .36s ease-out;
-  transition: transform .15s, filter .15s, box-shadow .15s;
+
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+
+  animation: flagPop .35s ease-out;
 }
 
 .flag-btn:hover {
   transform: translateY(-6px) scale(1.07);
-  filter: brightness(1.15);
   box-shadow: 0 12px 24px rgba(0,0,0,0.18);
 }
 
-@media (max-width: 460px) {
-  .flag-grid { gap: 10px; }
-  .flag-btn { font-size: 32px; padding: 12px; }
+/* BANDEIRAS REDONDAS */
+.flag-icon {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+  border: 2px solid #fff;
+
+  box-shadow: 0 0 6px rgba(0,0,0,0.18);
 }
 
-@media (max-width: 360px) {
-  .flag-grid { grid-template-columns: repeat(2, 1fr); }
+/* NOME DO IDIOMA */
+.flag-label {
+  font-size: 0.82rem;
+  color: #333;
+  font-weight: 600;
+}
+
+/* MOBILE */
+@media (max-width: 400px) {
+  .flag-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .flag-btn {
+    width: 100%;
+  }
 }
