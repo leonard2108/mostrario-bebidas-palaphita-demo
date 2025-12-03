@@ -16,7 +16,7 @@ async function sha256(str) {
     return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-const ADMIN_HASH = "7f7c6f7425c1a94031aede12dcdeec8f5eae78e2af3d54d28a303ceabbe35258";
+const ADMIN_HASH = "8ae080239c616ab3d2c399da3ae6550ccc78a83fb0f1c3eab08bfb41bf164e70";
 
 async function adminLogin() {
     const pwd = prompt("Senha de administrador:");
@@ -206,3 +206,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     applyTranslation();
     loadProducts();
 });
+
