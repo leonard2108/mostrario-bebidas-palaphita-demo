@@ -1,6 +1,8 @@
-/* =========================================================
-   VARIÁVEIS GERAIS DO TEMA
-   ========================================================= */
+/* ===========================================================
+   REN UI — STYLE.CSS COMPLETO
+   =========================================================== */
+
+/* ======= Tema base ======= */
 :root {
   --bg: #ffffff;
   --fg: #101418;
@@ -11,228 +13,219 @@
   --radius: 12px;
   --shadow: 0 6px 20px rgba(0,0,0,.08);
 
-  /* fundo configurável via painel admin */
   --bg-image: none;
-  --bg-fit: cover;               /* cover | contain | auto | height */
+  --bg-fit: cover;
   --bg-position: center center;
   --bg-opacity: 0.15;
 }
 
-:root[data-theme="dark"] {
-  --bg: #0b0e11;
-  --fg: #e5e7eb;
-  --muted: #9ca3af;
-  --surface: #111418;
-  --card: #12161b;
-  --primary: #60a5fa;
-  --shadow: 0 6px 24px rgba(0,0,0,.4);
-}
+html, body { margin: 0; padding: 0; }
 
-
-/* =========================================================
-   RESET
-   ========================================================= */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
-  background: var(--bg);
-  color: var(--fg);
-  line-height: 1.5;
-}
-
-
-/* =========================================================
-   BACKGROUND CONTROLADO PELO PAINEL SECRETO
-   ========================================================= */
+/* ======= Fundo ======= */
 .bg {
   position: fixed;
   inset: 0;
   z-index: -1;
-  pointer-events: none;
   background-image: var(--bg-image);
   background-size: var(--bg-fit);
-  background-position: var(--bg-position);
   background-repeat: no-repeat;
-  min-height: 100vh;
+  background-position: var(--bg-position);
   width: 100%;
+  min-height: 100vh;
 }
 
 .bg::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0, var(--bg-opacity));
+  background: rgba(0,0,0,var(--bg-opacity));
   pointer-events: none;
 }
 
-/* usado quando o painel define “height” */
-.bg.height-fit {
-  background-size: auto;
-  background-position: center top;
-  background-repeat: no-repeat;
-}
-
-
-/* =========================================================
-   ACESSIBILIDADE
-   ========================================================= */
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0,0,0,0);
-  white-space: nowrap; border: 0;
-}
-
-
-/* =========================================================
-   HEADER / CONTROLES
-   ========================================================= */
+/* ======= Topo ======= */
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 5;
-  backdrop-filter: saturate(180%) blur(6px);
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
-  padding: 12px 16px;
+  backdrop-filter: saturate(180%) blur(8px);
+  background: rgba(255,255,255,0.75);
+  padding: 14px 18px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 
 .controls {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
 }
 
-input[type="search"], select, button, .button {
-  border: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
-  background: var(--surface);
-  color: var(--fg);
+select, input[type="search"] {
   padding: 8px 12px;
   border-radius: 10px;
-  outline: none;
+  border: 1px solid #d4d4d4;
+  background: #f9f9f9;
+  font-size: 1rem;
 }
 
-button, .button {
-  cursor: pointer;
-  background: var(--primary);
-  color: white;
-  border: none;
+/* ======= Produtos ======= */
+.products-container {
+  padding: 24px;
 }
 
-
-/* =========================================================
-   PRODUTOS
-   ========================================================= */
-main { padding: 24px; }
-
-.product-card img {
+.product-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding-bottom: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
   width: 100%;
-  max-width: 300px;
-  height: auto;
-  object-fit: contain;
-}
-
-.card {
-  background: color-mix(in srgb, var(--card) 88%, transparent);
-  backdrop-filter: blur(2px);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.product-image-container {
-  padding: 12px;
-}
-
-.card .content {
-  padding: 12px 14px;
-  display: grid;
-  gap: 6px;
-  width: 100%;
+  max-width: 320px;
+  margin: 20px auto;
   text-align: center;
 }
 
-.card h3 { margin: 0; font-size: 1.05rem; }
-.card .price { font-weight: 700; }
-.card .desc {
-  color: var(--muted);
-  font-size: .95rem;
-  min-height: 3.2em;
+.product-image-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px 16px 0 0;
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
+.product-card .content {
+  padding: 12px;
+  display: grid;
   gap: 6px;
-  justify-content: center;
 }
 
-.tag {
-  border: 1px dashed color-mix(in srgb, var(--fg) 20%, transparent);
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: .8rem;
-  color: var(--muted);
+.desc {
+  font-size: 0.95rem;
+  color: #555;
 }
 
-
-/* =========================================================
-   MODAL SECRETO DO ADMIN
-   ========================================================= */
+/* ===========================================================
+   PAINEL ADMIN SECRETO
+   =========================================================== */
 #admin-bg-modal {
   position: fixed;
   inset: 0;
+  background: rgba(0,0,0,.50);
+  backdrop-filter: blur(6px);
   display: none;
   justify-content: center;
   align-items: center;
-  background: rgba(0,0,0,0.55);
   z-index: 9999;
-  padding: 20px;
 }
 
 #admin-bg-modal .modal-content {
-  width: min(720px, 95%);
-  background: var(--card);
-  padding: 22px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  width: 90%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
 }
 
-#admin-bg-modal label {
-  margin-top: 12px;
-  display: block;
-  font-size: .9rem;
-  margin-bottom: 4px;
+/* ===========================================================
+   POP-UP DE IDIOMAS — PREMIUM
+   =========================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes flagPop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-#admin-bg-modal input,
-#admin-bg-modal select {
-  width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--fg) 20%, transparent);
-}
-
-#admin-bg-modal .modal-actions {
+#lang-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(9px) saturate(180%);
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 22px;
+  justify-content: center;
+  align-items: center;
+  padding: 22px;
+  animation: fadeIn .25s ease-out;
 }
 
+#lang-popup .popup-card {
+  width: 92%;
+  max-width: 500px;
+  background: linear-gradient(155deg,
+    rgba(255,255,255,0.65),
+    rgba(255,255,255,0.90));
+  padding: 26px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0,0,0,.22);
+  animation: scaleIn .32s ease-out;
+  position: relative;
+}
 
-/* =========================================================
-   RESPONSIVIDADE
-   ========================================================= */
-@media (max-width: 560px) {
-  input[type="search"] { min-width: 0; width: 40vw; }
+#lang-popup .close-popup {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: rgba(255,255,255,.55);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: .15s;
+}
+
+#lang-popup .close-popup:hover {
+  transform: scale(1.12);
+  background: white;
+}
+
+#lang-popup h2 {
+  margin-top: 6px;
+  margin-bottom: 18px;
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.flag-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.flag-btn {
+  padding: 14px 8px;
+  font-size: 36px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.75);
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  animation: flagPop .36s ease-out;
+  transition: transform .15s, filter .15s, box-shadow .15s;
+}
+
+.flag-btn:hover {
+  transform: translateY(-6px) scale(1.07);
+  filter: brightness(1.15);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.18);
+}
+
+@media (max-width: 460px) {
+  .flag-grid { gap: 10px; }
+  .flag-btn { font-size: 32px; padding: 12px; }
+}
+
+@media (max-width: 360px) {
+  .flag-grid { grid-template-columns: repeat(2, 1fr); }
 }
