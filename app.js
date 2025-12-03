@@ -308,3 +308,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadProducts();
 });
 
+/* ============================
+   LOGIN ADMIN PREMIUM – REN
+   ============================ */
+
+const ADMIN_PASSWORD = "dc-21-08";
+
+function openAdminLogin() {
+  document.getElementById("admin-login-overlay").style.display = "flex";
+  document.getElementById("admin-login-password").value = "";
+}
+
+function closeAdminLogin() {
+  document.getElementById("admin-login-overlay").style.display = "none";
+}
+
+function validateAdminPassword() {
+  const pass = document.getElementById("admin-login-password").value.trim();
+
+  if (pass === ADMIN_PASSWORD) {
+    closeAdminLogin();
+    // abre painel admin normal
+    const panel = document.getElementById("admin-bg-modal");
+    if (panel) panel.style.display = "flex";
+  } else {
+    alert("Senha incorreta!");
+  }
+}
+
+/* Toggle olho */
+document.getElementById("password-toggle").onclick = () => {
+  const field = document.getElementById("admin-login-password");
+  field.type = field.type === "password" ? "text" : "password";
+};
+
+/* Botões */
+document.getElementById("admin-login-cancel").onclick = closeAdminLogin;
+document.getElementById("admin-login-submit").onclick = validateAdminPassword;
+
+/* Atalho: CTRL + ALT + A */
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "a") {
+    openAdminLogin();
+  }
+});
