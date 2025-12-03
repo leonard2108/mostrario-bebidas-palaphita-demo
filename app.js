@@ -1,5 +1,8 @@
-console.log("App started");
+console.log("App iniciado — Ren Master Edition");
 
+/* ===========================================================
+   ESTADO GLOBAL
+   =========================================================== */
 const state = {
     lang: localStorage.getItem("lang") || "pt",
     products: [],
@@ -10,21 +13,27 @@ const state = {
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
-/* ================= SHA-256 ================== */
+/* ===========================================================
+   HASH DA SENHA — SUA SENHA: dc-21-08
+   =========================================================== */
+const ADMIN_HASH = "8ae080239c616ab3d2c399da3ae6550ccc78a83fb0f1c3eab08bfb41bf164e70";
+
 async function sha256(str) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return [...new Uint8Array(buf)]
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
 }
-
-const ADMIN_HASH = "8ae080239c616ab3d2c399da3ae6550ccc78a83fb0f1c3eab08bfb41bf164e70";
 
 async function adminLogin() {
     const pwd = prompt("Senha de administrador:");
     if (!pwd) return false;
-    return await sha256(pwd) === ADMIN_HASH;
+    return (await sha256(pwd)) === ADMIN_HASH;
 }
 
-/* ================= POPUP PREMIUM ================== */
+/* ===========================================================
+   POPUP PREMIUM DE IDIOMA (Bandeiras Redondas — iOS)
+   =========================================================== */
 function openLanguagePopup() {
     if ($("#lang-popup")) $("#lang-popup").remove();
 
@@ -43,20 +52,34 @@ function openLanguagePopup() {
 
     modal.querySelector(".close-popup").onclick = () => modal.remove();
 
-    const LANG_FLAGS = [
-        ["pt","🇧🇷"],["en","🇺🇸"],["es","🇪🇸"],
-        ["fr","🇫🇷"],["jp","🇯🇵"],["kr","🇰🇷"],
-        ["cn","🇨🇳"],["de","🇩🇪"],["it","🇮🇹"],
-        ["nl","🇳🇱"],["ru","🇷🇺"],["tr","🇹🇷"],
-        ["bg","🇧🇬"],["pl","🇵🇱"],["ar","🇦🇪"]
-    ];
+    const FLAGS = {
+        pt: "https://flagcdn.com/w80/br.png",
+        en: "https://flagcdn.com/w80/us.png",
+        es: "https://flagcdn.com/w80/es.png",
+        fr: "https://flagcdn.com/w80/fr.png",
+        jp: "https://flagcdn.com/w80/jp.png",
+        kr: "https://flagcdn.com/w80/kr.png",
+        cn: "https://flagcdn.com/w80/cn.png",
+        de: "https://flagcdn.com/w80/de.png",
+        it: "https://flagcdn.com/w80/it.png",
+        nl: "https://flagcdn.com/w80/nl.png",
+        ru: "https://flagcdn.com/w80/ru.png",
+        tr: "https://flagcdn.com/w80/tr.png",
+        bg: "https://flagcdn.com/w80/bg.png",
+        pl: "https://flagcdn.com/w80/pl.png",
+        ar: "https://flagcdn.com/w80/ae.png" // Emirados — mais seguro
+    };
 
     const grid = modal.querySelector(".flag-grid");
 
-    LANG_FLAGS.forEach(([code, flag]) => {
+    Object.entries(FLAGS).forEach(([code, url]) => {
         const btn = document.createElement("button");
         btn.className = "flag-btn";
-        btn.textContent = flag;
+
+        btn.innerHTML = `
+            <img src="${url}" class="flag-icon" alt="${code}">
+            <span class="flag-label">${code.toUpperCase()}</span>
+        `;
 
         btn.onclick = async () => {
             state.lang = code;
@@ -73,7 +96,9 @@ function openLanguagePopup() {
     });
 }
 
-/* ================= I18N ================== */
+/* ===========================================================
+   I18N — CARREGAMENTO DE IDIOMA
+   =========================================================== */
 async function loadI18n(lang) {
     try {
         const res = await fetch(`i18n/${lang}.json`);
@@ -98,7 +123,9 @@ function applyTranslation() {
     document.title = state.t("title");
 }
 
-/* ================= PRODUTOS ================== */
+/* ===========================================================
+   PRODUTOS
+   =========================================================== */
 async function loadProducts() {
     try {
         const res = await fetch(`products-${state.lang}.json`);
@@ -118,7 +145,9 @@ function renderProducts(list) {
     box.innerHTML = "";
 
     list.forEach(p => {
-        const img = Array.isArray(p.images) ? p.images[0] : p.image;
+        const img = (Array.isArray(p.images) && p.images.length)
+            ? p.images[0]
+            : p.image;
 
         const card = document.createElement("div");
         card.className = "product-card";
@@ -137,23 +166,30 @@ function renderProducts(list) {
     });
 }
 
-/* ================= BUSCA ================== */
+/* ===========================================================
+   BUSCA
+   =========================================================== */
 $("#search").addEventListener("input", () => {
-    const t = $("#search").value.toLowerCase();
-    const f = state.products.filter(p =>
-        p.name.toLowerCase().includes(t) ||
-        p.description.toLowerCase().includes(t)
+    const term = $("#search").value.toLowerCase();
+
+    const filtered = state.products.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        p.description.toLowerCase().includes(term)
     );
-    renderProducts(f);
+
+    renderProducts(filtered);
 });
 
-/* ================= PAINEL SECRETO ================== */
+/* ===========================================================
+   PAINEL ADMIN SECRETO
+   =========================================================== */
 document.addEventListener("keydown", async (e) => {
     if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "a") {
         const ok = await adminLogin();
         if (!ok) return alert("Senha incorreta!");
 
-        $("#admin-bg-modal").style.display = "flex";
+        const modal = $("#admin-bg-modal");
+        modal.style.display = "flex";
 
         $("#admin-bg-url").value = localStorage.getItem("bg-url") || "";
         $("#admin-bg-fit").value = localStorage.getItem("bg-fit") || "cover";
@@ -162,7 +198,9 @@ document.addEventListener("keydown", async (e) => {
     }
 });
 
-$("#admin-bg-cancel").onclick = () => $("#admin-bg-modal").style.display = "none";
+$("#admin-bg-cancel").onclick = () => {
+    $("#admin-bg-modal").style.display = "none";
+};
 
 $("#admin-bg-save").onclick = () => {
     const url = $("#admin-bg-url").value.trim();
@@ -170,10 +208,10 @@ $("#admin-bg-save").onclick = () => {
     const pos = $("#admin-bg-position").value.trim();
     const op = $("#admin-bg-opacity").value;
 
-    if (url)
-        document.documentElement.style.setProperty("--bg-image", `url('${url}')`);
-    else
-        document.documentElement.style.setProperty("--bg-image", "none");
+    document.documentElement.style.setProperty(
+        "--bg-image",
+        url ? `url('${url}')` : "none"
+    );
 
     document.documentElement.style.setProperty("--bg-fit", fit);
     document.documentElement.style.setProperty("--bg-position", pos);
@@ -188,9 +226,12 @@ $("#admin-bg-save").onclick = () => {
     $("#admin-bg-modal").style.display = "none";
 };
 
-/* ================= SELECTOR DE IDIOMA ================== */
+/* ===========================================================
+   SELECTOR DE IDIOMA (TOPO)
+   =========================================================== */
 $("#language").addEventListener("change", async (e) => {
     const lang = e.target.value;
+
     state.lang = lang;
     localStorage.setItem("lang", lang);
 
@@ -199,11 +240,12 @@ $("#language").addEventListener("change", async (e) => {
     loadProducts();
 });
 
-/* ================= INICIALIZAÇÃO ================== */
+/* ===========================================================
+   INICIALIZAÇÃO
+   =========================================================== */
 document.addEventListener("DOMContentLoaded", async () => {
-    openLanguagePopup();
+    openLanguagePopup();   // popup sempre ao entrar
     await loadI18n(state.lang);
     applyTranslation();
     loadProducts();
 });
-
