@@ -1,322 +1,245 @@
-console.log('App started');
-// catalogo com i18n, modal de idioma na primeira visita, tema e busca
+console.log("App started");
+
+// Estado global
 const state = {
-    lang: localStorage.getItem('lang') || null,
+    lang: localStorage.getItem("lang") || null,
     products: [],
-    t: (k) => k,
     dict: {},
+    t: (k) => k
 };
 
-  // funções auxiliares
-const query = (selector) => document.querySelector(selector);
-const queryAll = (selector) => Array.from(document.querySelectorAll(selector));
+// =============================================
+// HELPERS
+// =============================================
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
 
-async function loadI18n(lang) {
-  console.log('Carregando idioma:', lang);
-  try {
-    const res = await fetch(`i18n/${lang}.json`);
-    if (!res.ok) throw new Error('lang not found');
-    state.dict = await res.json();
-    console.log('Dicionário carregado:', state.dict); // debug
-    state.t = (k) => state.dict[k] || k;
-    document.documentElement.lang = lang;
-  } catch (error) {
-    console.warn('Falling back to pt for i18n', error);
-    if (lang !== 'pt') return loadI18n('pt');
-  }
+
+// =============================================
+// SHA-256 + AUTENTICAÇÃO ADMIN
+// =============================================
+async function sha256(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function loadProducts() {
-  console.log('Carregando produtos...');
-    try {
-    const filename = `products-${state.lang || 'pt'}.json`;
-    console.log('Buscando arquivo:', filename);
-    const res = await fetch(filename);
-    console.log('Resposta recebida:', res.status, res.url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    state.products = await res.json();
-    console.log('Produtos carregados:', state.products);
-    renderProducts(state.products);
-     } catch (error) {
-    console.error('Erro ao carregar produtos', error); 
-     try {
-       state.lang = 'pt';
-       await loadProducts();
-     } catch (error) {
-       console.error('Erro ao carregar produtos em português', error);
-     }
-   }
+const ADMIN_HASH = "7f7c6f7425c1a94031aede12dcdeec8f5eae78e2af3d54d28a303ceabbe35258";
+
+async function adminLogin() {
+    const pwd = prompt("Senha de administrador:");
+    if (!pwd) return false;
+    const hash = await sha256(pwd);
+    return hash === ADMIN_HASH;
 }
 
-function formatPriceBRL(v) {
-    try {
-        let locale;
-        switch (state.lang) {
-            case 'en': locale = 'en-US'; break;
-            case 'es': locale = 'es-ES'; break;
-            case 'fr': locale = 'fr-FR'; break;
-            case 'de': locale = 'de-DE'; break;
-            case 'jp': locale = 'ja-JP'; break;
-            case 'kr': locale = 'ko-KR'; break;
-            case 'cn': locale = 'zh-CN'; break;
-            case 'it': locale = 'it-IT'; break;
-            case 'ru': locale = 'ru-RU'; break;
-            case 'ar': locale = 'ar-SA'; break;
-            case 'nl': locale = 'nl-NL'; break;
-            case 'pl': locale = 'pl-PL'; break;
-            case 'bg': locale = 'bg-BG'; break;
-            case 'tr': locale = 'tr-TR'; break;
-            default: locale = 'pt-BR'; //padrão
-             } 
-             return new Intl.NumberFormat(locale, {
-                 style: 'currency',
-                 currency: 'BRL',
-                }).format(v); 
-             } catch (error) {
-                console.warn("erro ao formatar preço", error)
-                return `R$ ${v}`;
-             }
-  }
 
-// Função para trocar a imagem do produto
-function changeProductImage(productId, direction) {
-  // Encontrar o produto no array de produtos
-  const product = state.products.find(p => p.id === productId);
-  if (!product || !product.images || product.images.length <= 1) return;
-  
-  // Calcular o novo índice
-  const currentIndex = product.currentImageIndex || 0;
-  let newIndex = currentIndex + direction;
-  
-  // Garantir que o índice esteja dentro dos limites
-  if (newIndex < 0) newIndex = product.images.length - 1;
-  if (newIndex >= product.images.length) newIndex = 0;
-  
-  // Atualizar o índice no produto
-  product.currentImageIndex = newIndex;
-  
-  // Atualizar a imagem no DOM
-  const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
-  if (card) {
-    const img = card.querySelector('img');
-    if (img) {
-      img.src = product.images[newIndex];
-    }
-  }
-}
-  // aplicar traduçoes na interface
-  function applyTranslation() {
-    queryAll('[data-i18n]').forEach(el => {
-      const key = el.dataset.i18n;
-      const translatedText = state.t(key);
-      console.log(`Translating key: ${key} -> ${translatedText}`); 
-      el.textContent = translatedText;
-  });
-  //atualizar placeholders
-queryAll('[data-i18n-placeholder]').forEach(el => {
-  const key = el.dataset.i18nPlaceholder;
-  el.placeholder = state.t(key);
-});
+// =============================================
+// POPUP DE IDIOMA (ABRE SEMPRE)
+// =============================================
+function showLanguagePopup() {
+    const modal = document.createElement("div");
+    modal.id = "lang-popup";
+    modal.style.cssText = `
+        position: fixed; inset: 0; z-index: 9999;
+        background: rgba(0,0,0,.5); display: flex;
+        justify-content: center; align-items: center;
+        padding: 20px;
+    `;
 
-//atualizar titulo da pagina
-document.title = state.t('title') || 'Catálogo de Produtos';
-  }
-
-// renderizar produtos
-function renderProducts(products) {
-    console.log('Renderizando produtos...');
-    const container = query('#products-container');
-    console.log('Container:', container);
-    if (!container) {
-      console.error('Elemento #products-container não encontrado');
-      return;
-    }
-    container.innerHTML = '';
-    products.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.dataset.productId = product.id;
-        
-        // Usar a primeira imagem ou fallback para compatibilidade
-        const currentImage =
-    Array.isArray(product.images) && product.images.length > 0
-        ? product.images[product.currentImageIndex] || product.images[0]
-        : product.image || "";
-        
-        card.innerHTML = `
-        <div class="product-image-container">
-          <img src="${currentImage}" alt="${product.name}">
-          ${product.images && product.images.length > 1 ? `
-            <div class="image-controls">
-              <button class="prev-image" aria-label="Imagem anterior">&#10094;</button>
-              <button class="next-image" aria-label="Próxima imagem">&#10095;</button>
+    modal.innerHTML = `
+        <div style="
+            background: white; padding: 20px;
+            border-radius: 12px; width: 90%; max-width: 480px;
+            text-align: center;
+        ">
+            <h2>Selecione seu idioma</h2>
+            <div id="popup-lang-grid" style="
+                display: grid; grid-template-columns: repeat(3,1fr);
+                margin-top: 18px; gap: 10px;
+            ">
             </div>
-          ` : ''}
         </div>
-        <div class="product-info">
-          <h3>${product.name}</h3>
-          <p>${product.description}</p>
-          <p class="price">${formatPriceBRL(product.price)}</p>
-        </div>
-      `;
-      container.appendChild(card);
-      
-      // Adicionar event listeners para os botões de troca de imagem
-      if (product.images && product.images.length > 1) {
-        const prevButton = card.querySelector('.prev-image');
-        const nextButton = card.querySelector('.next-image');
-        
-        prevButton.addEventListener('click', (e) => {
-          e.stopPropagation();
-          changeProductImage(product.id, -1);
-        });
-        
-        nextButton.addEventListener('click', (e) => {
-          e.stopPropagation();
-          changeProductImage(product.id, 1);
-        });
-      }
+    `;
+
+    document.body.appendChild(modal);
+
+    const langs = [
+        ["pt","PT"],["en","EN"],["es","ES"],["fr","FR"],["jp","日本語"],["kr","한국어"],
+        ["cn","中文"],["de","DE"],["it","IT"],["nl","NL"],["ru","RU"],
+        ["tr","TR"],["bg","BG"],["pl","PL"],["ar","AR"]
+    ];
+
+    const grid = $("#popup-lang-grid");
+
+    langs.forEach(([code, label]) => {
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        btn.style.cssText = `
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background: #f2f2f2;
+        `;
+        btn.onclick = async () => {
+            state.lang = code;
+            localStorage.setItem("lang", code);
+
+            await loadI18n(code);
+            applyTranslation();
+            loadProducts();
+
+            modal.remove();
+        };
+        grid.appendChild(btn);
     });
 }
 
-//buscar produtos
-function searchProducts() {
-    const searchTerm = query('#search').value.toLowerCase();
-    const filtered = state.products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm)
-    );
-    renderProducts(filtered);
+
+// =============================================
+// I18N
+// =============================================
+async function loadI18n(lang) {
+    try {
+        const res = await fetch(`i18n/${lang}.json`);
+        if (!res.ok) throw new Error("not found");
+        state.dict = await res.json();
+        state.t = (k) => state.dict[k] || k;
+        document.documentElement.lang = lang;
+    } catch (e) {
+        if (lang !== "pt") return loadI18n("pt");
+    }
+}
+
+function applyTranslation() {
+    $$("[data-i18n]").forEach(el => {
+        const key = el.dataset.i18n;
+        el.textContent = state.t(key);
+    });
+
+    $$("[data-i18n-placeholder]").forEach(el => {
+        const key = el.dataset.i18nPlaceholder;
+        el.placeholder = state.t(key);
+    });
+
+    document.title = state.t("title") || "Catálogo de Produtos";
 }
 
 
+// =============================================
+// PRODUTOS
+// =============================================
+async function loadProducts() {
+    try {
+        const file = `products-${state.lang}.json`;
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(res.status);
 
-//eventos
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM carregado');
-    // carregar idioma
-    const lang = state.lang || navigator.language.split('-')[0];
-    loadI18n(lang).then(() => {
-        applyTranslation();
-        loadProducts();
-    })
-  });
-    
-    // Inicializa as configurações de fundo
-    initBackgroundSettings();
-// evento de mudança de idioma
-query('#language').addEventListener('change', (e) => {
-  const newLang = e.target.value;
-  state.lang = newLang;
-  localStorage.setItem('lang', newLang);
-  loadI18n(newLang).then(() => {
+        state.products = await res.json();
+        renderProducts(state.products);
+    } catch (e) {
+        if (state.lang !== "pt") {
+            state.lang = "pt";
+            return loadProducts();
+        }
+    }
+}
+
+function renderProducts(products) {
+    const container = $("#products-container");
+    container.innerHTML = "";
+
+    products.forEach(p => {
+        const currentImg =
+            Array.isArray(p.images) && p.images.length > 0
+                ? p.images[p.currentImageIndex || 0]
+                : p.image || "";
+
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.dataset.productId = p.id;
+
+        card.innerHTML = `
+            <div class="product-image-container">
+                <img src="${currentImg}" alt="${p.name}">
+            </div>
+
+            <div class="content">
+                <h3>${p.name}</h3>
+                <p class="desc">${p.description}</p>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+
+// =============================================
+// BUSCA
+// =============================================
+$("#search").addEventListener("input", () => {
+    const s = $("#search").value.toLowerCase();
+    const result = state.products.filter(p =>
+        p.name.toLowerCase().includes(s) ||
+        p.description.toLowerCase().includes(s)
+    );
+    renderProducts(result);
+});
+
+
+// =============================================
+// PAINEL SECRETO – CTRL + ALT + A
+// =============================================
+document.addEventListener("keydown", async (e) => {
+    if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "a") {
+        const ok = await adminLogin();
+        if (!ok) return alert("Senha incorreta!");
+
+        $("#admin-bg-modal").style.display = "flex";
+
+        // carregar config
+        $("#admin-bg-url").value = localStorage.getItem("bg-url") || "";
+        $("#admin-bg-fit").value = localStorage.getItem("bg-fit") || "cover";
+        $("#admin-bg-position").value = localStorage.getItem("bg-position") || "center center";
+        $("#admin-bg-opacity").value = localStorage.getItem("bg-opacity") || "0.15";
+    }
+});
+
+$("#admin-bg-cancel").onclick = () => {
+    $("#admin-bg-modal").style.display = "none";
+};
+
+$("#admin-bg-save").onclick = () => {
+    const url = $("#admin-bg-url").value.trim();
+    const fit = $("#admin-bg-fit").value;
+    const pos = $("#admin-bg-position").value.trim();
+    const op = $("#admin-bg-opacity").value;
+
+    if (url) document.documentElement.style.setProperty("--bg-image", `url('${url}')`);
+    else document.documentElement.style.setProperty("--bg-image", "none");
+
+    document.documentElement.style.setProperty("--bg-fit", fit);
+    document.documentElement.style.setProperty("--bg-position", pos);
+    document.documentElement.style.setProperty("--bg-opacity", op);
+
+    localStorage.setItem("bg-url", url);
+    localStorage.setItem("bg-fit", fit);
+    localStorage.setItem("bg-position", pos);
+    localStorage.setItem("bg-opacity", op);
+
+    alert("Configurações salvas!");
+    $("#admin-bg-modal").style.display = "none";
+};
+
+
+// =============================================
+// INICIALIZAÇÃO
+// =============================================
+document.addEventListener("DOMContentLoaded", async () => {
+    showLanguagePopup(); // popup automático
+
+    const lang = state.lang || "pt";
+    await loadI18n(lang);
     applyTranslation();
     loadProducts();
-  });
 });
-
-// Função para inicializar as configurações de fundo
-function initBackgroundSettings() {
-  // Elementos do DOM
-  const bgSettingsBtn = query('#bg-settings');
-  const bgModal = query('#bg-modal');
-  const closeBgModalBtn = query('#close-bg-modal');
-  const bgOptions = queryAll('.bg-option');
-  const bgFitOptions = queryAll('.bg-fit-option');
-  const overlayOpacity = query('#overlay-opacity');
-  
-  // Carregar configurações salvas
-  const savedBg = localStorage.getItem('bg-image') || 'url(\'assets/backgrounds/bg1.svg\')';
-  const savedFit = localStorage.getItem('bg-fit') || 'height';
-  const savedOpacity = localStorage.getItem('overlay-opacity') || '35';
-  
-  // Aplicar configurações salvas
-  if (savedBg !== 'none') {
-    document.documentElement.style.setProperty('--bg-image', savedBg);
-    const activeBgOption = queryAll('.bg-option').find(opt => opt.dataset.bg === savedBg);
-    if (activeBgOption) activeBgOption.classList.add('active');
-  } else {
-    document.documentElement.style.setProperty('--bg-image', 'none');
-    const noneOption = queryAll('.bg-option').find(opt => opt.dataset.bg === 'none');
-    if (noneOption) noneOption.classList.add('active');
-  }
-  
-  document.documentElement.style.setProperty('--bg-fit', savedFit);
-  const activeFitOption = queryAll('.bg-fit-option').find(opt => opt.dataset.fit === savedFit);
-  if (activeFitOption) activeFitOption.classList.add('active');
-  
-  overlayOpacity.value = savedOpacity;
-  updateOverlayOpacity(savedOpacity);
-  
-  // Abrir modal de configurações
-  bgSettingsBtn.addEventListener('click', () => {
-    bgModal.removeAttribute('hidden');
-  });
-  
-  // Fechar modal de configurações
-  closeBgModalBtn.addEventListener('click', () => {
-    bgModal.setAttribute('hidden', true);
-  });
-  
-  // Fechar modal ao clicar fora
-  bgModal.addEventListener('click', (e) => {
-    if (e.target === bgModal) {
-      bgModal.setAttribute('hidden', true);
-    }
-  });
-  
-  // Selecionar imagem de fundo
-  bgOptions.forEach(option => {
-    option.addEventListener('click', () => {
-      // Remover classe ativa de todas as opções
-      bgOptions.forEach(opt => opt.classList.remove('active'));
-      // Adicionar classe ativa à opção selecionada
-      option.classList.add('active');
-      
-      const bgValue = option.dataset.bg;
-      if (bgValue !== 'none') {
-        document.documentElement.style.setProperty('--bg-image', bgValue);
-      } else {
-        document.documentElement.style.setProperty('--bg-image', 'none');
-      }
-      
-      localStorage.setItem('bg-image', bgValue);
-    });
-  });
-  
-  // Selecionar ajuste de imagem
-  bgFitOptions.forEach(option => {
-    option.addEventListener('click', () => {
-      // Remover classe ativa de todas as opções
-      bgFitOptions.forEach(opt => opt.classList.remove('active'));
-      // Adicionar classe ativa à opção selecionada
-      option.classList.add('active');
-      
-      const fitValue = option.dataset.fit;
-      document.documentElement.style.setProperty('--bg-fit', fitValue);
-      localStorage.setItem('bg-fit', fitValue);
-    });
-  });
-  
-  // Ajustar opacidade do overlay
-  overlayOpacity.addEventListener('input', () => {
-    updateOverlayOpacity(overlayOpacity.value);
-  });
-  
-  overlayOpacity.addEventListener('change', () => {
-    localStorage.setItem('overlay-opacity', overlayOpacity.value);
-  });
-}
-
-// Função para atualizar a opacidade do overlay
-function updateOverlayOpacity(value) {
-  const opacity = value / 100;
-  const overlayLight = `linear-gradient(to bottom, rgba(0, 0, 0, ${opacity}), rgba(0, 0, 0, ${opacity}))`;
-  const overlayDark = `linear-gradient(to bottom, rgba(0, 0, 0, ${opacity + 0.13}), rgba(0, 0, 0, ${opacity + 0.13}))`;
-  
-  document.documentElement.style.setProperty('--bg-overlay', overlayLight);
-  document.documentElement.style.setProperty('--bg-overlay-dark', overlayDark);
-}
-// evento de busca
-
-query('#search').addEventListener('input', searchProducts);
