@@ -1,4 +1,4 @@
-/* app.js — REN MASTER EDITION */
+
 
 console.log("App iniciado — Ren Master Edition");
 
@@ -341,4 +341,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Erro na inicialização:", e);
   }
 });
+
 
